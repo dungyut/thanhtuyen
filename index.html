@@ -411,6 +411,12 @@
             50% { transform: translate(-50%, -50%) scale(1.1); }
         }
 
+        /* New keyframes for heart drop */
+        @keyframes heartDrop {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, 400px) scale(0.5); opacity: 0; }
+        }
+
         .letter-paper {
             position: absolute;
             top: 20px;
@@ -424,111 +430,93 @@
             font-size: 1.1rem;
             color: #D63384;
             line-height: 1.6;
-            overflow-y: auto;
+            overflow-y: auto; /* Đã được kích hoạt để cuộn */
             box-shadow: inset 0 0 10px rgba(221, 160, 221, 0.2);
             opacity: 0;
             transform: translateY(20px) scale(0.8);
             transition: all 0.5s ease;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            text-align: left; /* Đã đổi sang căn lề trái */
+            display: block;
             z-index: 0;
         }
-
+        
         .envelope.seal-removed .heart-seal {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0);
+            animation: heartDrop 1s ease-in forwards;
+            pointer-events: none;
         }
 
         .envelope.opened .envelope-flap {
             transform: rotateX(-180deg);
         }
 
-        .envelope.opened .letter-paper {
+        .envelope.content-shown .letter-paper {
             opacity: 1;
             transform: translateY(0) scale(1);
-        }
-
-        .envelope.falling {
-            animation: envelopeFall 1s ease-out forwards;
-            pointer-events: none;
-        }
-
-        .letter-paper.expanded {
-            top: 10%;
-            left: 10%;
-            right: 10%;
-            bottom: 10%;
-            transform: scale(1.2);
-            z-index: 2001;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: expandLetter 0.5s ease forwards;
-        }
-
-        @keyframes envelopeFall {
-            to {
-                transform: translateY(100vh) rotate(15deg);
-                opacity: 0;
-            }
-        }
-
-        @keyframes expandLetter {
-            from {
-                transform: translateY(0) scale(1);
-                opacity: 1;
-            }
-            to {
-                transform: scale(1.2);
-                opacity: 1;
-            }
-        }
-
-        @keyframes foldLetter {
-            from {
-                transform: scale(1.2);
-                opacity: 1;
-            }
-            to {
-                transform: translateY(20px) scale(0.8);
-                opacity: 0;
-            }
         }
 
         .letter-controls {
             position: fixed;
             top: 20px;
-            left: 20px;
             right: 20px;
+            z-index: 3000;
             display: flex;
-            justify-content: space-between;
-            z-index: 2002;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.5s ease;
+            pointer-events: none;
         }
 
-        .control-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 25px;
+        .letter-controls.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        
+        .letter-controls .control-btn {
+            background: linear-gradient(45deg, #ff6b9d, #ffc3d8);
+            border: 2px dashed #d63384;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             font-family: 'Kalam', cursive;
             font-weight: 600;
+            font-size: 1.2rem;
+            color: #d63384;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(214, 51, 132, 0.3);
             transition: all 0.3s ease;
-            font-size: 14px;
+        }
+        .letter-controls .control-btn:hover {
+            transform: scale(1.1);
         }
 
-        .back-btn {
-            background: linear-gradient(45deg, #87CEEB, #B0E0E6);
-            color: #4682B4;
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .wish-text {
+                font-size: 1.5rem;
+            }
+            .cake {
+                width: 200px;
+                height: 200px;
+            }
+            .envelope {
+                width: 250px;
+                height: 170px;
+            }
+            .envelope-flap::before {
+                border-left: 125px solid transparent;
+                border-right: 125px solid transparent;
+                border-top: 40px solid #FFB6C1;
+            }
+            .letter-paper {
+                font-size: 1rem;
+            }
         }
 
-        .close-btn {
-            background: linear-gradient(45deg, #FFB6C1, #FFC0CB);
-            color: #DC143C;
-        }
-
-        .control-btn:hover {
-            transform: scale(1.05);
-        }
 
         /* Mobile Responsive */
         @media (max-width: 480px) {
@@ -569,7 +557,6 @@
     </style>
 </head>
 <body>
-    <!-- Phase 1: Wishes -->
     <div class="wishes-container" id="wishesContainer">
         <div class="wish-text" id="wish1">Chúc mừng sinh nhật cậu, người đặc biệt nhất 🎉</div>
         <div class="wish-text" id="wish2">Gửi cậu, người đặc biệt nhất trong ngày hôm nay..</div>
@@ -585,34 +572,28 @@
         <button class="cake-button" id="cakeBtn" style="display: none;">🎂 BÁNH KEM 🎂</button>
     </div>
 
-    <!-- Water Stream Transition -->
     <div class="water-stream" id="waterStream"></div>
 
-    <!-- Phase 2: Cake -->
     <div class="cake-container" id="cakeContainer">
         <img src="cake.png" alt="Birthday Cake" class="cake" id="cakeImage">
     </div>
 
-    <!-- Phase 3: Photo Rain -->
     <div class="photo-rain-container" id="photoRainContainer">
         <div class="photo-frame">
             <img src="person.png" alt="Birthday Person" class="photo">
         </div>
     </div>
 
-    <!-- Letter Notification -->
     <div class="letter-notification" id="letterNotification">
         Có thư gửi đến kìa!
     </div>
 
-    <!-- Special Letter Button -->
     <button class="special-letter-btn" id="specialLetterBtn">💌 Phong Thư Đặc Biệt</button>
 
-    <!-- Letter Container -->
     <div class="letter-container" id="letterContainer">
-        <div class="letter-controls">
-            <button class="control-btn back-btn" onclick="backToPhotoRain()">← Quay lại</button>
-            <button class="control-btn close-btn" id="closeBtn" style="display: none;">✕ Đóng</button>
+        <div class="letter-controls" id="letterControls">
+            <button class="control-btn" id="closeLetter" style="display: none;">✕</button>
+            <button class="control-btn" id="backToRain">↺</button>
         </div>
         
         <div class="envelope" id="envelope">
@@ -827,9 +808,9 @@
         function openLetterContainer() {
             document.getElementById('photoRainContainer').style.display = 'none';
             document.getElementById('letterContainer').style.display = 'flex';
+            document.getElementById('letterControls').classList.add('show');
+            document.getElementById('closeLetter').style.display = 'none';
             setInterval(createLetterRain, 300);
-            const envelope = document.getElementById('envelope');
-            envelope.style.pointerEvents = 'auto';
             resetLetterState();
         }
 
@@ -852,26 +833,22 @@
             const envelope = document.getElementById('envelope');
             const heartSeal = document.getElementById('heartSeal');
             const letterPaper = document.getElementById('letterPaper');
-            const closeBtn = document.getElementById('closeBtn');
-
-            console.log('Letter Step:', letterStep); // Debug
+            const closeLetterBtn = document.getElementById('closeLetter');
 
             switch (letterStep) {
-                case 0: // Remove heart seal
+                case 0: // First click: heart seal drops
                     envelope.classList.add('seal-removed');
                     letterStep = 1;
                     break;
-                case 1: // Open envelope flap
+                case 1: // Second click: envelope flap opens
                     envelope.classList.add('opened');
                     letterStep = 2;
                     break;
-                case 2: // Envelope falls, letter paper expands
-                    envelope.classList.add('falling');
-                    envelope.style.pointerEvents = 'none';
+                case 2: // Third click: letter content shows and controls appear
+                    envelope.classList.add('content-shown');
                     setTimeout(() => {
-                        letterPaper.classList.add('expanded');
-                        closeBtn.style.display = 'block';
-                    }, 1000);
+                        closeLetterBtn.style.display = 'flex';
+                    }, 800);
                     letterStep = 3;
                     break;
             }
@@ -879,42 +856,16 @@
 
         function resetLetterState() {
             const envelope = document.getElementById('envelope');
-            const letterPaper = document.getElementById('letterPaper');
-            const closeBtn = document.getElementById('closeBtn');
-            envelope.style.animation = 'none';
-            envelope.classList.remove('falling', 'opened', 'seal-removed');
-            letterPaper.classList.remove('expanded');
-            closeBtn.style.display = 'none';
-            envelope.style.pointerEvents = 'auto';
-            envelope.style.opacity = '1';
-            envelope.style.transform = 'scale(1)';
+            const letterControls = document.getElementById('letterControls');
+            const closeLetterBtn = document.getElementById('closeLetter');
+
+            envelope.classList.remove('content-shown', 'opened', 'seal-removed');
+            closeLetterBtn.style.display = 'none';
             letterStep = 0;
         }
 
         function closeLetter() {
-            const envelope = document.getElementById('envelope');
-            const letterPaper = document.getElementById('letterPaper');
-            const closeBtn = document.getElementById('closeBtn');
-
-            letterPaper.style.animation = 'foldLetter 0.5s ease forwards';
-            setTimeout(() => {
-                letterPaper.style.animation = 'none';
-                letterPaper.classList.remove('expanded');
-                envelope.classList.remove('falling', 'opened', 'seal-removed');
-                envelope.style.pointerEvents = 'auto';
-                envelope.style.opacity = '0';
-                envelope.style.transform = 'translateY(100vh) scale(0.8)';
-                setTimeout(() => {
-                    envelope.style.transition = 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-                    envelope.style.transform = 'scale(1)';
-                    envelope.style.opacity = '1';
-                    setTimeout(() => {
-                        envelope.style.transition = 'transform 0.3s ease';
-                    }, 500);
-                }, 100);
-                closeBtn.style.display = 'none';
-                letterStep = 0;
-            }, 500);
+            resetLetterState();
         }
 
         function backToPhotoRain() {
@@ -922,7 +873,7 @@
             document.getElementById('photoRainContainer').style.display = 'flex';
             resetLetterState();
         }
-
+        
         function createRainText() {
             const container = document.getElementById('photoRainContainer');
             if (container.style.display === 'flex') {
@@ -961,6 +912,8 @@
         });
 
         document.getElementById('envelope').addEventListener('click', handleEnvelopeClick);
+        document.getElementById('closeLetter').addEventListener('click', closeLetter);
+        document.getElementById('backToRain').addEventListener('click', backToPhotoRain);
 
         // Start the experience
         setTimeout(showNextWish, 500);
